@@ -1,5 +1,95 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
+	header
+		h1 Cerberus Radio 8
+		p For all your groovy needs
+		
+	#dance-banner
+
+	#audio-box
+		#player
+			audio(controls src="http://82.36.154.13:8000/live") sorry we are not live at the moment
+
+		marquee#current-song OFFLINE
+
+	#controls
+		form
+			input#search-song(type='text' placeholder='search song')
+			input#search-artist(type='text' placeholder='search artist')
+			button(type='button' onclick='search()') search
+			ul#results
+
+		ul#playlist
+			h2 Coming Up
+
+	script(src='https://cdn.socket.io/socket.io-1.4.5.js')
+	
+	script.
+		var searchTracks = [];
+		var addable = true;
+		var socket = io('cerberus-radio.herokuapp.com:3001');
+		socket.on('connect', function (){
+			console.log('Socket is connected');
+		});
+		socket.on('trackUpdate', function (data){
+			console.dir(data);
+			update(data);
+		});
+		socket.on('searchResults', function (data){
+			console.dir(data.tracks);
+			searchTracks = data.tracks.items;
+			displayResults();
+		});
+		function update (tracks){
+			$('#playlist li').remove();
+			if (tracks.length === 0) {
+				return;
+			}
+			var thisSong = tracks[0].track;
+			var artist = thisSong.artists[0].name;
+			var trackDisplay = thisSong.name + " - " + artist;
+			$('#current-song').text(trackDisplay);
+
+			for (var i = 1; i < tracks.length; i++) {
+
+				var trackArtist = tracks[i].track.artists[0].name;
+				var trackTitle = tracks[i].track.name + " - " + trackArtist;
+				var html = "<li><h3>" + trackTitle + "</h3></li>";
+				$('#playlist').append(html);
+
+			}
+		}
+		function search (){
+			var query = {
+				'song'	: $('#search-song').val(),
+				'artist': $('#search-artist').val(),
+				'id'	: socket.io.engine.id
+			}
+			if (!(query.song == '' && query.artist == ''))
+				socket.emit('searchWith', query);
+		}
+		function displayResults (){
+			
+			$('#results').empty();
+			
+			for (var i = 0; i < searchTracks.length; i++) {
+
+				var track = searchTracks[i];
+				var html = "<li>" + track.name + " - " + track.artists[0].name;
+				html += "<button type='button' onclick='addThis(" + i + ")'>ADD</button>";
+				html += "</li>";
+
+				$('#results').append(html);
+
+			}
+		}
+		function addThis (id){
+
+			var track = searchTracks[id];
+			socket.emit('addTrack', {
+				'id'	: socket.io.engine.id,
+				'track'	: track
+			});
+
+		}
