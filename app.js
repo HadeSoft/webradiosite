@@ -9,12 +9,11 @@ var http = require('http');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
-var app = express();
+var app = express.createServer(express.logger());
 
-var server = http.Server(app);
-routes.setSocketListener(server);
+routes.setSocketListener(app);
 
-server.listen(process.env.PORT || 3001);
+app.listen(process.env.PORT || 5000);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
