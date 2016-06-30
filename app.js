@@ -14,7 +14,7 @@ var app = express();
 var server = http.Server(app);
 routes.setSocketListener(server);
 
-server.listen(3001);
+server.listen(process.env.PORT || 3001);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

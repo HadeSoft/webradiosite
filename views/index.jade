@@ -28,7 +28,7 @@ block content
 	script.
 		var searchTracks = [];
 		var addable = true;
-		var socket = io('cerberus-radio.herokuapp.com:3001');
+		var socket = io('cerberus-radio.herokuapp.com');
 		socket.on('connect', function (){
 			console.log('Socket is connected');
 		});
